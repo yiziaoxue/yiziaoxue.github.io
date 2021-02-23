@@ -4,11 +4,11 @@
   
     
     <entry>
-      <title>Redis基本数据类型</title>
-      <link href="2021/02/22/Redis%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"/>
-      <url>2021/02/22/Redis%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/</url>
+      <title>四种Java线程池</title>
+      <link href="2021/02/%E5%9B%9B%E7%A7%8DJava%E7%BA%BF%E7%A8%8B%E6%B1%A0/"/>
+      <url>2021/02/%E5%9B%9B%E7%A7%8DJava%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
       
-        <content type="html"><![CDATA[<p>redis是一个key-value形式的nosql存储系统，redis的所有操作都是原子性的。</p><p>1、String<br>string是二进制安全的，可以存储图片文件等，也可以利用incr用作计数统计。</p><p>set key value</p><p>get key</p><p>incr key</p><p>2、List<br>list类型是一个双向链表结构，亦可实现一个队列。</p><p>lpush key  value</p><p>rpush key  value</p><p>lrange key start end</p><p>lpop key </p><p>3、Hash<br>散列类型，适合存储对象，即将对象的每个属性存成单个string类型。一个对象存储在hash类型中会占用更少的内存，并且可以更方便的存取整个对象，其底层数据结构是一个HashMap，如果属性个数不超过指定个数或者大小，则底层采用一维数组紧凑存储该MAP，如果超过该阈值，则转为真正的HashMap。</p><p>hset key field value</p><p>hmset key field value[field value…]</p><p>hget key field</p><p>hmget key field….</p><p>hgetall key</p><p>hexists key field </p><p>hsetnx key field value        当且仅当 field不存在的时候才设置值</p><p>hincrby key field increment       返回增加后的数字，当value不为整数时，报错</p><p>hdel key field….       返回被删除个数</p><p>hkeys key          返回所有字段名</p><p>hvals key       返回所有键值</p><p>hlen key     返回字段总数</p><p>4、Set<br>set是一个不可重复的无序集合。可以快速查找元素是否存在，可以求两个set的差集。实际项目中切记set集合的大小不要过大，否则容易导致节点内存不均匀，redis访问阻塞，影响服务质量。</p><p>sadd key value…   添加一个或多个</p><p>smembers key      返回所有集合元素</p><p>sismember key     查询指定key是否存在</p><p>srem key…            删除一个或者多个key</p><p>scard key              查看集合中元素个数</p><p>srandmember key num  随机返回集合中的指定个数元素</p><p>spop key               随机删除一个元素，并返回元素信息</p><p>5、ZSet<br>zadd key score value[scre value]</p><p>zscard key</p><p>zrange key start end        查看指定位置的成员  加上 withscores即可返回分数</p><p>zrank key value            获取指定成员下标</p><p>zcount key score score        获取指定分数之间成员个数</p><p>zrem key value…     删除一个或者多个元素</p><p>zscore key value      获取指定元素的score</p><p>zincrby key score value       对指定元素的score加上指定分数</p><p>zrangebyscore key score  score   获取score范围之间的数据</p><p>zremrangebyscore  key score  score  删除指定score范围内的数据</p><p>zremrangebyrank   key  rank   rank    删除指定下标内的数据</p>]]></content>
+        <content type="html"><![CDATA[<p> Java线程池为我们提供了很好的线程容器，当我们需要用到多线程，并要对此进行有效管理的时候我们需要用到线程池。</p><p> <strong>使用场景：</strong><br> 1、单任务处理时长较短<br> 2、需处理任务数量较大</p><p><strong>使用好处</strong><br>1、减少在创建和销毁线程上面所花的系统资源开销，当我们的任务处理时长较短、但是任务较多的情况下，线程的创建也销毁所带来的系统开销也是很大的<br>2、减少大量线程的创建而没有很好的监管，导致内存不足引发过多swap或者内存溢出。</p><p><strong>四种线程池</strong><br>1、newCachedThreadPool<br>    创建一个可以缓存的线程池，即已经创建并运行结束的线程并不直接销毁和回收，而是缓存起来等待下次复用，如果线程池长度超过限制数量则回收空闲线程，如果没有空闲线程，则继续新建，理论上该线程池没有最大数量限制，只受内存影响。</p><p>2、newFixedThreadPool<br>    创建一个指定数量的线程池，由此可以控制并发数，达到限流的效果，如果超出线程数量的请求会排队等待空闲线程。</p><p>3、newScheduledThreadPool<br>    创建一个指定数量的线程池，而与newFixedTreadPool不同的是，该线程池支持定时执行以及周期性执行，通过该线程池我们可以实现一些定时任务，类似linux的crontab。</p><p>4、newSingleThreadPool<br>    创建一个单一线程池，虽然是线程池，但是他的池内只维护一个线程，所以请求排队处理，与单线程不同的就是，如果这个唯一线程出现异常情况，线程池会重新实例化一个线程添加进去，保证线程池的正常。该思想与reactor并发模型和redis的事件处理模型有相似之处（redis的事件处理模型其实就是reactor并发模型）</p>]]></content>
       
       
       <categories>
@@ -20,7 +20,132 @@
       
         <tags>
             
-            <tag> 技术 </tag>
+            <tag> Java </tag>
+            
+            <tag> 线程 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Redis数据库底层设计</title>
+      <link href="2021/02/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%95%E5%B1%82%E8%AE%BE%E8%AE%A1/"/>
+      <url>2021/02/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%95%E5%B1%82%E8%AE%BE%E8%AE%A1/</url>
+      
+        <content type="html"><![CDATA[<p>在Redis5大数据结构中，跳跃表（skiplist）是比较难理解的，同时却也是使用比较少的数据结构，只在实现有序集合zset和集群节点内部槽位和键的对饮关系数据结构中用到了。</p><p>数据结构代码</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct zskiplist&#123;</span><br><span class="line">struct zskiplistNode *header, *tail;&#x2F;&#x2F;指定头节点和尾节点</span><br><span class="line">unsigned long length;&#x2F;&#x2F;集合长度</span><br><span class="line">int level；&#x2F;&#x2F;跳跃表最大深度，即以节点中层数最多的那个为准，头节点不包括在内</span><br><span class="line">&#125;zskiplist；</span><br></pre></td></tr></table></figure><p>跳跃表单节点数据结构</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef struct zskiplistNode&#123;</span><br><span class="line">struct zskiplistNode *backward；&#x2F;&#x2F;后退指针</span><br><span class="line">double score；&#x2F;&#x2F;分值</span><br><span class="line">robj *obj；&#x2F;&#x2F;成员对象</span><br><span class="line">struct zskiplistLevel&#123;&#x2F;&#x2F;层对象</span><br><span class="line">struct zskiplistNode *forward;&#x2F;&#x2F;前进指针</span><br><span class="line">unsigned int span;&#x2F;&#x2F;两个节点之间的距离跨度，主要用于获取当前节点排位</span><br><span class="line">&#125;level[];</span><br><span class="line">&#125;zskiplistNode;</span><br></pre></td></tr></table></figure><p>头节点的后退指针和成员对象、分值都不会被使用到。尾节点的前进指针都为null。<br>跳跃表每创建一个节点的时候，都会根据幂次定律随机生成一个介于1～32的数值作为该节点的层数，即zskiplistLevel数组的长度。也就是说跳跃表的最大深度为32。一般来说，层数越多，则从该节点访问其他节点的速度会越快。</p><p>当跳跃表用于表示集群中槽位和键的关系的时候，score为槽位号(score可重复，节点按键排序)，成员是数据库键。通过遍历跳跃表可以很轻易的统计某个槽位中所有键及其个数。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Redis </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Redis跳跃表</title>
+      <link href="2021/02/Redis%E8%B7%B3%E8%B7%83%E8%A1%A8/"/>
+      <url>2021/02/Redis%E8%B7%B3%E8%B7%83%E8%A1%A8/</url>
+      
+        <content type="html"><![CDATA[<p>在Redis5大数据结构中，跳跃表（skiplist）是比较难理解的，同时却也是使用比较少的数据结构，只在实现有序集合zset和集群节点内部槽位和键的对饮关系数据结构中用到了。</p><p>数据结构代码</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct zskiplist&#123;</span><br><span class="line">struct zskiplistNode *header, *tail;&#x2F;&#x2F;指定头节点和尾节点</span><br><span class="line">unsigned long length;&#x2F;&#x2F;集合长度</span><br><span class="line">int level；&#x2F;&#x2F;跳跃表最大深度，即以节点中层数最多的那个为准，头节点不包括在内</span><br><span class="line">&#125;zskiplist；</span><br></pre></td></tr></table></figure><p>跳跃表单节点数据结构</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef struct zskiplistNode&#123;</span><br><span class="line">struct zskiplistNode *backward；&#x2F;&#x2F;后退指针</span><br><span class="line">double score；&#x2F;&#x2F;分值</span><br><span class="line">robj *obj；&#x2F;&#x2F;成员对象</span><br><span class="line">struct zskiplistLevel&#123;&#x2F;&#x2F;层对象</span><br><span class="line">struct zskiplistNode *forward;&#x2F;&#x2F;前进指针</span><br><span class="line">unsigned int span;&#x2F;&#x2F;两个节点之间的距离跨度，主要用于获取当前节点排位</span><br><span class="line">&#125;level[];</span><br><span class="line">&#125;zskiplistNode;</span><br></pre></td></tr></table></figure><p>头节点的后退指针和成员对象、分值都不会被使用到。尾节点的前进指针都为null。<br>跳跃表每创建一个节点的时候，都会根据幂次定律随机生成一个介于1～32的数值作为该节点的层数，即zskiplistLevel数组的长度。也就是说跳跃表的最大深度为32。一般来说，层数越多，则从该节点访问其他节点的速度会越快。</p><p>当跳跃表用于表示集群中槽位和键的关系的时候，score为槽位号(score可重复，节点按键排序)，成员是数据库键。通过遍历跳跃表可以很轻易的统计某个槽位中所有键及其个数。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Redis </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Zookeeper选主过程</title>
+      <link href="2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/"/>
+      <url>2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/</url>
+      
+        <content type="html"><![CDATA[<p>zookeeper，一个致力于分布式应用程序协调服务的框架。<br>使用场景包括：<br>1、配置中心<br>2、命名服务（RPC的使用场景，Eureka也是个不错的选择）<br>3、通知协调（基于zk的发布订阅功能）<br>4、心跳检测<br>5、Master选举（抢占式，类似redis的setnx，只能创建一个，创建成功的抢占成功）<br>6、锁<br>上面很多场景都是基于zk的watcher监听机制，当监听的节点发生变更会通知所有监听该节点的客户端，而通知则是基于zk的原子广播（基于Zab协议）。<br>而ZAB协议有两种模式：<br>1、广播模式，zk大部分时间处于广播模式。主要处理客户端请求和leader与Follow之间的状态同步。<br>1、恢复模式，当系统启动或者leader节点down掉或者失去大部分Follow的时候进入恢复模式，进行选主流程。</p><p><strong>自动选主</strong><br>了解这个过程，分四个步骤<br>1、系统角色<br>|角色|描述|<br>|—|—-|<br>|Leader|领导者，负责进行投票的发起和决议，更新系统状态|<br>|Follower|跟随者（学习者），用于接受客户端请求并发挥结果，在选中过程中参与投票|<br>|ObServer|观察者（学习者），要手动修改配置指定一个Server为观察者，可以接受请求，但是转发给leader处理，不参与投票，只同步状态，接受投票结果|</p><p>2、交互事件（选举过程中跟随者节点之间持续发生的事件）<br>（1）发送消息给其他节点<br>（2）接受其他节点发送过来的信息<br>（3）处理其他节点发送过来的信息</p><p>3、消息内容<br>（1）myid：来源节点想要推举的leaderid，和zxid用（myid，zxid表示）<br>（2）id：来源节点的id（可以等于leaderid，即自己推举自己当leader）<br>（3）zxid：来源节点当前数据版本，值越大则数据越新，这是成为leader最重要的条件<br>（4）epoch：当前选举轮次标识（逻辑时钟），值越大则轮次越新，成为leader的首要条件。</p><p>4、选主过程<br>（1）集群启动<br>（2）集群每个服务节点都没有数据，数据版本都相等，即为默认值。<br>（3）此时没有leader，每个节点都推举自己当leader，即id=myid，将以上四个信息广播给其他所有节点（包括自己）<br>（4）接受到其他节点发送的信息的节点，先要判断来源节点状体，如果对方处于Looking，且自己处于Following或者leading则直接回复消息通知来源节点，leading已产生，请尽快同步。如果自己也处于looking状态，则对来源信息和自己的信息进行对比。1.对比epoch，采用值较大者的信息。2.如果epoch一样则对比zxid，采用值较大者的信息。3.如果zxid也一样，则比较节点id，采用值较大者的信息。如果采用的是来源节点的信息，则更新自己的节点信息，并且广播给其他节点。否则直接将自己的信息直接广播给其他节点。<br>（5）直到某轮选举已经选出被绝大多数节点承认的leader，其他节点同步新leader的状态。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Zookeeper </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Spring的加载过程</title>
+      <link href="2021/02/Spring%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"/>
+      <url>2021/02/Spring%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/</url>
+      
+        <content type="html"><![CDATA[<p>Spring提供了IOC（控制反转）和AOP（面向切面编程）基本功能，解决企业应用开发的复杂性的一个开源框架。其核心组件包括core、context、bean。</p><p><strong>启动过程</strong><br>在一个基于springmvc的web应用中，需要有一个web容器，一般我们用tomacat，这个web容器提供了一个全局的上下文环境ServletContext，同时也是Spring  IoC容器的宿主环境。<br>宿主容器启动时，其入口文件便是web.xml。web.xml需要定义两个最基本的内容，ContextLoaderListener和DispatcherServlet。<br>1、ContextLoaderListener是实现了ServletContextListener接口的监听器，在项目启动的时候会触发容器初始化方法contextInitialized，容器初始化方法主要做3个事情<br>（1）执行initWebApplicationContext方法，启动一个根上下文WebApplicationContext（一个接口类），其实现类为XmlWebApplicationContext（即传说的IOC容器）。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 定义监听器，监听项目的启动和关闭，执行对应的方法 --&gt; </span><br><span class="line">&lt;listener&gt;  </span><br><span class="line">    &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;&#x2F;listener-class&gt;  </span><br><span class="line">&lt;&#x2F;listener&gt;  </span><br></pre></td></tr></table></figure><p>（2）根据配置路径加载spring文件创建Bean的实例，这些bean都放入XmlWebApplicationContxt容器中。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 加载Spring配置文件 --&gt;  </span><br><span class="line">&lt;context-param&gt;  </span><br><span class="line">    &lt;param-name&gt;contextConfigLocation&lt;&#x2F;param-name&gt;  </span><br><span class="line">    &lt;param-value&gt;  </span><br><span class="line">    classpath:spring-context*.xml  </span><br><span class="line">    &lt;&#x2F;param-value&gt;  </span><br><span class="line">&lt;&#x2F;context-param&gt;</span><br></pre></td></tr></table></figure><p>（3）将加载好Bean实例的WebApplicationContext按指定的key注册到ServletContext（Java Web全局变量宿主容器）容器中去。</p><p>2、contextLoaderListener监听器监听容器初始化完成之后，开始初始化web.xml中配置的Servlet（可以配置多个），springmvc中以DispatcherServlet为例。DispatcherServlet，前端控制器，也可以叫请求分发控制器，用来接收、匹配、处理、转发每个servlet请求。DispatcherServlet会以WebApplicationServlet作为自己的parent上下文，然后再初始化自己的上下文。DispatcherServlet初始化上下文主要包括处理器映射器，处理器适配器，视图解析器等。最后再将初始化完成的Servlet注册到ServletContext中，这样每个Servlet都可以持有自己的上下文，同时又能共享根上下文，即IOC容器上下文WebApplicationContext。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;servlet&gt;  </span><br><span class="line">    &lt;servlet-name&gt;spring3mvc&lt;&#x2F;servlet-name&gt;  </span><br><span class="line">    &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;&#x2F;servlet-class&gt;  </span><br><span class="line">    &lt;init-param&gt;  </span><br><span class="line">        &lt;param-name&gt;contextConfigLocation&lt;&#x2F;param-name&gt;  </span><br><span class="line">        &lt;param-value&gt;  </span><br><span class="line">        classpath:spring-mvc*.xml  </span><br><span class="line">        &lt;&#x2F;param-value&gt;  </span><br><span class="line">    &lt;&#x2F;init-param&gt;  </span><br><span class="line">    &lt;load-on-startup&gt;1&lt;&#x2F;load-on-startup&gt;  </span><br><span class="line">&lt;&#x2F;servlet&gt;</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Spring </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>Redis基本数据类型</title>
+      <link href="2021/02/Redis%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/"/>
+      <url>2021/02/Redis%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/</url>
+      
+        <content type="html"><![CDATA[<p>Redis是一个key-value形式的nosql存储系统，redis的所有操作都是原子性的。</p><p>1、String<br>string是二进制安全的，可以存储图片文件等，也可以利用incr用作计数统计。</p><ul><li><p><code>set key value</code></p></li><li><p><code>get key</code></p></li><li><p><code>incr key</code></p></li></ul><p>2、List<br>list类型是一个双向链表结构，亦可实现一个队列。</p><ul><li><p><code>lpush key  value</code></p></li><li><p><code>rpush key  value</code></p></li><li><p><code>lrange key start end</code></p></li><li><p><code>lpop key</code></p></li></ul><p>3、Hash<br>散列类型，适合存储对象，即将对象的每个属性存成单个string类型。一个对象存储在hash类型中会占用更少的内存，并且可以更方便的存取整个对象，其底层数据结构是一个HashMap，如果属性个数不超过指定个数或者大小，则底层采用一维数组紧凑存储该MAP，如果超过该阈值，则转为真正的HashMap。</p><ul><li><p><code>hset key field value</code></p></li><li><p><code>hmset key field value[field value...]</code></p></li><li><p><code>hget key field</code></p></li><li><p><code>hmget key field....</code></p></li><li><p><code>hgetall key</code></p></li><li><p><code>hexists key field</code> </p></li><li><p><code>hsetnx key field value</code>        当且仅当 field不存在的时候才设置值</p></li><li><p><code>hincrby key field increment</code>       返回增加后的数字，当value不为整数时，报错</p></li><li><p><code>hdel key field....</code>       返回被删除个数</p></li><li><p><code>hkeys key</code>          返回所有字段名</p></li><li><p><code>hvals key</code>       返回所有键值</p></li><li><p><code>hlen key</code>     返回字段总数</p></li></ul><p>4、Set<br>set是一个不可重复的无序集合。可以快速查找元素是否存在，可以求两个set的差集。实际项目中切记set集合的大小不要过大，否则容易导致节点内存不均匀，redis访问阻塞，影响服务质量。</p><ul><li><p><code>sadd key value...</code>   添加一个或多个</p></li><li><p><code>smembers key</code>      返回所有集合元素</p></li><li><p><code>sismember key</code>     查询指定key是否存在</p></li><li><p><code>srem key...</code>            删除一个或者多个key</p></li><li><p><code>scard key</code>              查看集合中元素个数</p></li><li><p><code>srandmember key num</code>  随机返回集合中的指定个数元素</p></li><li><p><code>spop key</code>               随机删除一个元素，并返回元素信息</p></li></ul><p>5、ZSet</p><ul><li><p><code>zadd key score value[scre value]</code></p></li><li><p><code>zscard key</code></p></li><li><p><code>zrange key start end</code>        查看指定位置的成员  加上 withscores即可返回分数</p></li><li><p><code>zrank key value</code>            获取指定成员下标</p></li><li><p><code>zcount key score score</code>        获取指定分数之间成员个数</p></li><li><p><code>zrem key value...</code>     删除一个或者多个元素</p></li><li><p><code>zscore key value</code>      获取指定元素的score</p></li><li><p><code>zincrby key score value</code>       对指定元素的score加上指定分数</p></li><li><p><code>zrangebyscore key score  score</code>   获取score范围之间的数据</p></li><li><p><code>zremrangebyscore  key score  score</code>  删除指定score范围内的数据</p></li><li><p><code>zremrangebyrank   key  rank   rank</code>    删除指定下标内的数据</p></li></ul>]]></content>
+      
+      
+      <categories>
+          
+          <category> 技术 </category>
+          
+      </categories>
+      
+      
+        <tags>
             
             <tag> Redis </tag>
             
@@ -32,8 +157,8 @@
     
     <entry>
       <title>笑傲江湖（续）</title>
-      <link href="2021/02/22/%E7%AC%91%E5%82%B2%E6%B1%9F%E6%B9%96%EF%BC%88%E7%BB%AD%EF%BC%89/"/>
-      <url>2021/02/22/%E7%AC%91%E5%82%B2%E6%B1%9F%E6%B9%96%EF%BC%88%E7%BB%AD%EF%BC%89/</url>
+      <link href="2021/02/%E7%AC%91%E5%82%B2%E6%B1%9F%E6%B9%96%EF%BC%88%E7%BB%AD%EF%BC%89/"/>
+      <url>2021/02/%E7%AC%91%E5%82%B2%E6%B1%9F%E6%B9%96%EF%BC%88%E7%BB%AD%EF%BC%89/</url>
       
         <content type="html"><![CDATA[<p>       冰湖中，东方不败未死，得以一颗冰心重生，无泪无情，不悲不喜，一袭白衣，一人一骑只身血洗黑木崖。</p><p>       五岳派闻讯前来围攻，只是东方不败的强大更胜从前，五岳派却只得大败而归，至此江湖人具言解铃还需系铃人，已经退隐的令狐冲携任盈盈再上黑木崖，此时东方冰心一颗，已然无欲无情….</p><p>       几日后，江湖传言令狐冲受重伤也悻悻而归，而败退的五岳派此时并未甘休，便准备联系少林，武当，崆峒，青城一年后再上黑木崖。此后半年江湖中腥风血雨，已经没有人可以阻挡日月神教一统的脚步，江湖中人更是人心惶惶，腥风血雨之后便是令人窒息的宁静，也许暴风雨即将来临。一年之约转眼便到，武林中的泰山北斗少林武当汇集各大门派齐聚黑木崖山脚，魔教教徒早在山下接战，那一战直杀得天昏地暗，从暴雨杀到烈日当空，从旭日东升杀到夜幕降临，血流直从黑木崖山顶流到山脚，哭喊声响彻山谷，咒骂声不绝于耳，吓破胆的直想后退，自相践踏者无数，想要借此乱世扬名立万的愈战愈勇，此一战直打了三天三夜，而五岳派渐渐逼上了黑木崖。</p><p>       黑木崖日月神教校场上的王座高高耸起，东方站在王座前瞥见石阶下熙攘的人群，转尔望向东方升起的朝阳，鲜红的阳光划过东方的脸颊，却依然是那么煞白，坚毅眼神中不带一丝感情，簌簌的晨风拂过东方的一缕青丝飘过她的眉梢，终于，她不动声色地笑了‘你们，终于来了，也罢，如此一来倒省得我去找你们了，既然来了就不要走了’东方并未多言，只一瞬间飞将下台，五岳派掌门，更不打话，五剑齐出，迎将上去，东方面无惧色，白衣飘飘，穿梭于五人之间，穿针引线，真好似飘飘兮如流风之回，五剑急退又一同刺上，东方翩翩闪转，又好似渺渺兮若轻云之蔽月。五岳剑派自从左冷禅，岳不群等人之后已然青黄不接，几息之间，五人已经力感不支，渐渐败下阵来，东方自不肯善罢甘休，而今虽无情，却有恨，尔等天下人负我久矣，天下人如此之多，而我有何错，又为何只针对我一人，要我尝尽人间疾苦，爱恨情仇，如今这笔账我要一并讨回。瞬间五针齐出，五人齐齐出剑相抵，竟被小小银针震飞，各自后退十余步方能止住颓势，各自受伤不浅，五人目目相对，竟无人再敢上前。</p><p>       五岳派败退，少林方丈手持金杵接上东方，交手几百合，竟不分胜负，方丈不住摇头，长叹一声‘东方施主，老衲妄自痴长你几岁，既胜你不得，便算是输了，只劝你能放下屠刀，立地成佛，阿弥陀佛。’‘老朽老讨教东方教主高招。’语毕，少林方丈退后之时武当掌门挺剑而出，一出招便是太极剑法，东方嘴角勾起一个轻蔑的笑容，只拂袖飞出，连战江湖中二位泰山北斗，骄傲如东方何曾惧怕，骄傲如东方何曾软弱，骄傲如东方何曾落泪，也许曾经有那么一人，但自从冰湖中重生以来，她便不知何为痛，何为乐，生与死已然没有区别。如果说她在一颗冰心驱动下的身体还有那么一丝温度，那么便是仇恨的欲火在燃烧，直烧的她痛不欲生，直烧得她要将天下人踩在脚下，看着他们匍匐在自己面前卑微地讨饶，无尽的杀戮方能愈合她那已经失去的伤痕累累的心，从前的善良换到的只是最后依然孑然一身，甚至失去了一切，包括他，那么从今而后便谁也不要奢望能得到什么，覆灭一切，那么从此天下人与我东方又何异……然而太极剑何等精妙，东方见招拆招逐渐力感不支，几口鲜血已经染红了白衣，惨红的晨曦映射在东方白皙，此刻又更显苍白的面颊，心比天高，东方无动于衷，负手而立，一身斑斓的白衣在风中翩翩而舞，翩若惊鸿，昂首对日，却将身后一众英雄好汉视若不见，宛若游龙，那气势真可与日月争辉，纵使今日命丧于此又如何，见一女子尚且如此英雄，此刻各路好汉舞步唏嘘，而今天下于东方何义，东方笃定今日便是死却也休叫天下人小觑了东方不败。东方仰天大笑三声，直笑得全场英雄心惊胆寒，武当掌门亦长叹三声，扬剑刺去，东方仍狂笑不止，不闪不必，剑尖直指心口。‘噹’一声，东方眼见自己并未死去，睁眼看去，竟是令狐冲与武当掌门打了起来，任盈盈此刻正在一边掠阵，本来令狐独孤九剑精妙无比，自能与太极剑一较高下，只是令狐冲一年前的旧伤未愈，太极剑愈耍愈妙，令狐自然落于下风，拆了几十招，令狐冲已经身中数剑，却也值得苦苦支持。</p><p>       ‘令狐少侠，你这是何苦？他可是魔教教主’冲虚见令狐冲如此也不忍下手。</p><p>       ‘道长，你尽管出手吧，我负她多矣，今日就算命丧于此，也绝无怨言。’</p><p>       ’令狐冲抖擞精神，提剑欲再战。任盈盈想要出言相劝，但她知晓令狐冲个性，转而向东方道</p><p>       ‘东方不败，你何时变得如此狠心，难道冲哥此时如此为你，也不值得你出手么？’</p><p>        东方一声冷笑，用不带一丝感情的眼神瞥了任盈盈一眼，冰冷道‘令狐冲？’一声反问，继而道‘是他自己找死，与人何忧？’</p><p>       ‘你怎么会变得如此冷漠？’任盈盈还要多言，令狐冲却道‘盈盈不要多言了’，任盈盈只得闭口不言。冲虚道长自是识大体之人，他虽素来欣赏令狐冲，但是值此大是大非之事，却由不得他行妇人之仁了。冲虚突然提速，顿时凌厉的剑气直逼令狐冲，令狐冲躲闪不得，拼着自损一臂的危险迎将上前，任盈盈见状，顿感不妙，箭步飞起，挡在令狐冲身前，冲虚也是大吃一惊，瞬间虚劈一剑，正中任盈盈左肩，谁知冲虚这一剑竟是虚招，而是声东击西，挥剑立即刺向东方不败，这一剑本不会伤着令狐冲，但任盈盈却担心令狐甚多，多行此举导致自己受伤不浅，而东方如何料得这冲虚道长仁义一生居然在此一刻行如此卑鄙之举，自是惊疑不定，转念一想也便释然了。</p><p>      ‘啊，’一声，竟是令狐冲又冲向东方，用自己伤痕累累的身躯挡住了这一剑。此一刻，全场愕然，令狐冲，任盈盈双双身受重伤，冲虚本着即使舍弃自己多年的仁义之名不要也要力保令狐冲而重伤东方不败这个魔头，没想到到头来还是功亏一篑。</p><p>       ‘哈哈，没想到我东方一生作孽，到头来也能有人肯为我而死。’笑声是那么凄厉。</p><p>       ‘令狐冲，你真是无药可救了，你以为你这么做我便会感激你么？’依然冷冰冰的言语不带一丝语气，说话之时竟不曾瞧向令狐冲一眼。</p><p>      ‘我不指望你能感激我，我只求你能少恨我一点便足矣。’令狐冲此时捂着胸口几次挣扎着要站起来。</p><p>      ‘冲哥，现在我的心口好痛。’任盈盈身体一阵抽粗，捂着胸口双目朦胧，泪水混合着血水簌簌的往下流。</p><p>      ‘当然会痛了，因为你的心是东方教主给你的，与其说是你的心，倒不如说是你和东方教主的心。’日月神教教众中走出神医平一指。</p><p>      ‘为什么？为什么会这样？’任盈盈惊疑道‘因为你中的三尸脑神丹根本无药可医，东方教主为了成全你和令狐冲，竟甘愿挖心救你。’闻言，全场汗然，刚刚的同仇敌忾之心此时隐隐浮现一丝的怜惜之情，而霎时之间任盈盈轰然倒地，心痛愈发的剧烈了。令狐冲挣扎着站了起来，艰难的想要走到东方的身前。</p><p>       ‘为什么？令狐冲，为什么你肯接受任大小姐，却不能给如此一心一意为你的东方教主一个好的交待？’平一指双目圆睁，怒视着令狐冲，圆睁的双目带着更多的是疑惑。</p><p>       ‘哼哼‘令狐冲苦笑两声，道’我令狐冲何德何能，只是我这一生所负的人太多，小师妹，师娘，蓝凤凰，六师弟，盈盈和东方姑娘，小师妹，师娘，蓝凤凰，六师弟，我已然不能挽回什么，只是盈盈和东方姑娘，我又怎敢奢望能完全对得起他们，我只求能少负他们一点，盈盈对我情深意重，我哪有不知，而东方姑娘为我几次三番赴死相救，我们一见如故，自是情投意合，只是这一份情，我令狐冲莫死难忘，纵是上刀山下火海也不能报答，于是我逃避，我一直逃避，我害怕，因为相对于东方姑娘的复出，他要的爱我已经给不起了，既然二者我我注定要负一个人，那么我宁愿选择辜负我更爱的东方，既然爱不起就让这份爱永远藏在我的心里，毕竟你是我这一生最爱的，那么选择负你也许会使我的负罪感会少一点，只是这件事我从未对谁说过，直到今天，没想到，选择了离开之后，你的情债却反而越来越重，重到我无法不对你坦白，重到我不能再伪装下去了，盈盈，对不起，是我骗了你。’令狐冲几欲流泪，只是这一刻，令狐冲感觉内心释然了好多，多年内心的沉淀一下子清空了好多。</p><p>      ‘冲哥，我的心真的好痛，好痛，我现在真的好痛苦，其实这一年与你朝夕相处，这一切我都知道，只是我原本以为时间能淡化一切，也许我真的错了，而这颗心也从来没有让我开心过，一天也没有。这一年以来，我一直都要承受两个人的痛苦，但是为什么要我来背负这些痛苦，而你东方却能做一个冷冰冰的无情无义之人，我受够了，我真的受够了，冲哥，别了，爱过你，我不后悔。’任盈盈声泪俱下，转身向着东方不败，道</p><p>      ‘我不需要你的可怜，东方不败，我终究还是输了，但是我也不需要你的怜悯，你的心，我还给你。’语毕，任盈盈右手成爪状竟将一颗心掏了出来,任盈盈也登时闭目，却用低不可闻的声音说道‘因为这颗心真的好痛好痛。’</p><p>       直到倒地的那一刻，任盈盈的脸上才真的浮现出了属于自己快乐的笑容。天下间奇女子，到此可见一斑，敢爱敢恨，直教人唏嘘不已。令狐冲支着走到任盈盈身旁，扶起她的身体，胸口又是一阵疼痛，却见东方转过头来</p><p>      ‘为什么，为什么到现在了，你才告诉我这些？’东方眼角朦胧，却未见滴泪，但是此时他的心却隐约感到一丝的痛楚。</p><p>      ‘不是我不说，而是我不敢说，你知道么，你的爱压得我喘不过气来，我怕我给不起，我是真的给不起………’</p><p>      哽咽的声音却显得那么的清晰。满场的英雄好汉却也不答话，只默默看着，江湖儿女最心酸的一幕莫过于此罢，众人内心瞬间激起无限的涟漪。</p><p>      ‘你知道么，我不在乎你能给我什么，我只要你肯定的一句话，或是一个笑容，我心足矣，只是这些东西，你都没有给过我太多’东方心底一酸，口中竟喷出一口血</p><p>      ‘怕是以后没有机会了，不过我不后悔，令狐冲，爱过你，我真的不后悔。’说完，东方身体渐渐不自主的瘫软在地，令狐冲无力地伸出手想抓住东方，却只看见东方的手在自己的手掌渐渐滑落，令狐真的想抓住东方，抓住一切，只是一切都如同玩笑般离他而去。而东方死时嘴角竟勾起一个笑容，这是一个满足的笑容。</p><p>       ‘为什么，为什么会这样？’令狐冲放下任盈盈的身体仰天大叫‘谁能告诉我这是问什么？’这叫声，直叫得人撕心裂肺，痛不欲生。</p><p>      ‘因为东方教主在冰湖中积怨堆恨而得冰心以此从生，但是当她再次动情伤心的时候，他的心也就会慢慢的消融，直至死去，东方教主就是那么傻，即使宁愿再死一次也要选择再爱你一回，即使这份爱只维持了这几息之间，可悲，可叹啊…令狐冲你好福气啊，好福气啊……’平一指潸然泪下的说道，而东方已死，众人却是又喜又悲，怎奈命运弄人，世事难料，人世间两个奇女子竟为了令狐冲于今日同时香消玉殒，殊不知这是令狐冲的福气还是他的罪孽。自此后令狐冲便消失于江湖之中，有人说华山之上有一疯癫剑叟便是令狐冲，也有人说在任盈盈与东方不败惨死当日，令狐冲便抱着二人的尸体一统沉入了湖中，还有人说在江南某处竹林古墓深处，时常能听见失传的琴箫合奏的笑傲江湖曲….总之令狐冲的故事终究要淡出江湖，毕竟新的江湖要由新人去书写。（完）</p>]]></content>
       

@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zookeeper选主过程 | Luka Blog</title><meta name="keywords" content="Zookeeper"><meta name="author" content="Luka Chun"><meta name="copyright" content="Luka Chun"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="zookeeper，一个致力于分布式应用程序协调服务的框架。使用场景包括：1、配置中心2、命名服务（RPC的使用场景，Eureka也是个不错的选择）3、通知协调（基于zk的发布订阅功能）4、心跳检测5、Master选举（抢占式，类似redis的setnx，只能创建一个，创建成功的抢占成功）6、锁上面很多场景都是基于zk的watcher监听机制，当监听的节点发生变更会通知所有监听该节点的客户端，而通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zookeeper选主过程">
+<meta property="og:url" content="https://yiziaoxue.github.io/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Luka Blog">
+<meta property="og:description" content="zookeeper，一个致力于分布式应用程序协调服务的框架。使用场景包括：1、配置中心2、命名服务（RPC的使用场景，Eureka也是个不错的选择）3、通知协调（基于zk的发布订阅功能）4、心跳检测5、Master选举（抢占式，类似redis的setnx，只能创建一个，创建成功的抢占成功）6、锁上面很多场景都是基于zk的watcher监听机制，当监听的节点发生变更会通知所有监听该节点的客户端，而通">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=329814888,560972838&fm=26&gp=0.jpg">
+<meta property="article:published_time" content="2021-02-23T15:46:00.000Z">
+<meta property="article:modified_time" content="2021-02-23T15:48:51.429Z">
+<meta property="article:author" content="Luka Chun">
+<meta property="article:tag" content="Zookeeper">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=329814888,560972838&fm=26&gp=0.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yiziaoxue.github.io/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2021-02-23 23:48:51'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" src="https://gss0.baidu.com/70cFfyinKgQFm2e88IuM_a/forum/w=580/sign=95b5edce9b510fb37819779fe932c893/9898caf81a4c510faa81416d6559252dd52aa558.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=329814888,560972838&amp;fm=26&amp;gp=0.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Luka Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li><li><a class="site-page" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li></ul></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Zookeeper选主过程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-02-23T15:46:00.000Z" title="发表于 2021-02-23 23:46:00">2021-02-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-02-23T15:48:51.429Z" title="更新于 2021-02-23 23:48:51">2021-02-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Zookeeper选主过程"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>zookeeper，一个致力于分布式应用程序协调服务的框架。<br>使用场景包括：<br>1、配置中心<br>2、命名服务（RPC的使用场景，Eureka也是个不错的选择）<br>3、通知协调（基于zk的发布订阅功能）<br>4、心跳检测<br>5、Master选举（抢占式，类似redis的setnx，只能创建一个，创建成功的抢占成功）<br>6、锁<br>上面很多场景都是基于zk的watcher监听机制，当监听的节点发生变更会通知所有监听该节点的客户端，而通知则是基于zk的原子广播（基于Zab协议）。<br>而ZAB协议有两种模式：<br>1、广播模式，zk大部分时间处于广播模式。主要处理客户端请求和leader与Follow之间的状态同步。<br>1、恢复模式，当系统启动或者leader节点down掉或者失去大部分Follow的时候进入恢复模式，进行选主流程。</p>
+<p><strong>自动选主</strong><br>了解这个过程，分四个步骤<br>1、系统角色<br>|角色|描述|<br>|—|—-|<br>|Leader|领导者，负责进行投票的发起和决议，更新系统状态|<br>|Follower|跟随者（学习者），用于接受客户端请求并发挥结果，在选中过程中参与投票|<br>|ObServer|观察者（学习者），要手动修改配置指定一个Server为观察者，可以接受请求，但是转发给leader处理，不参与投票，只同步状态，接受投票结果|</p>
+<p>2、交互事件（选举过程中跟随者节点之间持续发生的事件）<br>（1）发送消息给其他节点<br>（2）接受其他节点发送过来的信息<br>（3）处理其他节点发送过来的信息</p>
+<p>3、消息内容<br>（1）myid：来源节点想要推举的leaderid，和zxid用（myid，zxid表示）<br>（2）id：来源节点的id（可以等于leaderid，即自己推举自己当leader）<br>（3）zxid：来源节点当前数据版本，值越大则数据越新，这是成为leader最重要的条件<br>（4）epoch：当前选举轮次标识（逻辑时钟），值越大则轮次越新，成为leader的首要条件。</p>
+<p>4、选主过程<br>（1）集群启动<br>（2）集群每个服务节点都没有数据，数据版本都相等，即为默认值。<br>（3）此时没有leader，每个节点都推举自己当leader，即id=myid，将以上四个信息广播给其他所有节点（包括自己）<br>（4）接受到其他节点发送的信息的节点，先要判断来源节点状体，如果对方处于Looking，且自己处于Following或者leading则直接回复消息通知来源节点，leading已产生，请尽快同步。如果自己也处于looking状态，则对来源信息和自己的信息进行对比。1.对比epoch，采用值较大者的信息。2.如果epoch一样则对比zxid，采用值较大者的信息。3.如果zxid也一样，则比较节点id，采用值较大者的信息。如果采用的是来源节点的信息，则更新自己的节点信息，并且广播给其他节点。否则直接将自己的信息直接广播给其他节点。<br>（5）直到某轮选举已经选出被绝大多数节点承认的leader，其他节点同步新leader的状态。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Luka Chun</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://yiziaoxue.github.io/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/">https://yiziaoxue.github.io/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yiziaoxue.github.io" target="_blank">Luka Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Zookeeper/">Zookeeper</a></div><div class="post_share"><div class="social-share" data-image="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=329814888,560972838&amp;fm=26&amp;gp=0.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/02/Redis%E8%B7%B3%E8%B7%83%E8%A1%A8/"><img class="prev-cover" src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1857449433,1954050664&amp;fm=26&amp;gp=0.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Redis跳跃表</div></div></a></div><div class="next-post pull-right"><a href="/2021/02/Spring%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/"><img class="next-cover" src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3909464245,2315337199&amp;fm=26&amp;gp=0.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Spring的加载过程</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" src="https://gss0.baidu.com/70cFfyinKgQFm2e88IuM_a/forum/w=580/sign=95b5edce9b510fb37819779fe932c893/9898caf81a4c510faa81416d6559252dd52aa558.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Luka Chun</div><div class="author-info__description">每天记录一点点</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yiziaoxue"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">每天进步一点点</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/02/%E5%9B%9B%E7%A7%8DJava%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="四种Java线程池"><img src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3948485664,2431734131&amp;fm=26&amp;gp=0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="四种Java线程池"/></a><div class="content"><a class="title" href="/2021/02/%E5%9B%9B%E7%A7%8DJava%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="四种Java线程池">四种Java线程池</a><time datetime="2021-02-23T15:54:00.000Z" title="发表于 2021-02-23 23:54:00">2021-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/02/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%95%E5%B1%82%E8%AE%BE%E8%AE%A1/" title="Redis数据库底层设计"><img src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3098034369,2777648129&amp;fm=26&amp;gp=0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis数据库底层设计"/></a><div class="content"><a class="title" href="/2021/02/Redis%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%95%E5%B1%82%E8%AE%BE%E8%AE%A1/" title="Redis数据库底层设计">Redis数据库底层设计</a><time datetime="2021-02-23T15:52:00.000Z" title="发表于 2021-02-23 23:52:00">2021-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/02/Redis%E8%B7%B3%E8%B7%83%E8%A1%A8/" title="Redis跳跃表"><img src="https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1857449433,1954050664&amp;fm=26&amp;gp=0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis跳跃表"/></a><div class="content"><a class="title" href="/2021/02/Redis%E8%B7%B3%E8%B7%83%E8%A1%A8/" title="Redis跳跃表">Redis跳跃表</a><time datetime="2021-02-23T15:49:00.000Z" title="发表于 2021-02-23 23:49:00">2021-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/" title="Zookeeper选主过程"><img src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=329814888,560972838&amp;fm=26&amp;gp=0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Zookeeper选主过程"/></a><div class="content"><a class="title" href="/2021/02/Zookeeper%E9%80%89%E4%B8%BB%E8%BF%87%E7%A8%8B/" title="Zookeeper选主过程">Zookeeper选主过程</a><time datetime="2021-02-23T15:46:00.000Z" title="发表于 2021-02-23 23:46:00">2021-02-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/02/Spring%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/" title="Spring的加载过程"><img src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3909464245,2315337199&amp;fm=26&amp;gp=0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Spring的加载过程"/></a><div class="content"><a class="title" href="/2021/02/Spring%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%BF%87%E7%A8%8B/" title="Spring的加载过程">Spring的加载过程</a><time datetime="2021-02-23T15:24:00.000Z" title="发表于 2021-02-23 23:24:00">2021-02-23</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By Luka Chun</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
